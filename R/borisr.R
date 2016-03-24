@@ -10,6 +10,11 @@ get_obslist<- function(dat){
   names(dat$observations)
 }
 
+get_ind_vars <- function(dat, obs_number){
+  obs = dat$observations[[obs_number]]
+  data.frame(obs_id = obs_number, obs$independent_variables, strings_as_factors = FALSE)
+}
+
 get_events <- function(dat,obs_number) {
   # extract the events to a data frame for this one trial by trial name or index number
   # to do: add a column of the obs_number for later grouping
@@ -24,6 +29,30 @@ get_events <- function(dat,obs_number) {
   return(obs.df)
 }
 
+get_ethogram <- function(dat){
+  eth.list = dat$behavior_conf
+  eth.df = do.call(rbind.data.frame, ethogram.list)
+  eth.df = data.frame(lapply(eth.df, as.character), stringsAsFactors=FALSE)
+  return(eth.df)
+}
+
+
+get_event_types <- function(eth.df,evtype="State event"){
+
+  strsplitrows <-function(str) {
+    if (typeof(str) != "character") return("")
+    return( cbind(unlist(strsplit(str, ","))) )
+
+  }
+
+  ev.df = with(eth.df[eth.df$type==evtype,], data.frame(code, modifiers,stringsAsFactors = FALSE ))
+
+  data.frame("behavior" = ev.df$code, "Modifiers" = sapply(ev.df$modifiers,strsplitrows))
+  return(ev.df)
+}
+
+
+
 split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2")) {
   # yikes!  spliting a column of strings is not simple
   # to do : make this more generic for any column, not just subevents
@@ -32,7 +61,7 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
   # first have to split the strings, but get a list of vectors back
   # have to use the "fixed" function because if seperator is a regular expression special
   #   character, like |, need to ignore that
-  subev.list = str_split(subevents, fixed(seperator))
+  subevlist = str_split(subevents, fixed(seperator))
 
   # function to make two strings out of one or two
   # these data sometimes have two, and sometimes one with no seperator

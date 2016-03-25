@@ -30,21 +30,25 @@ get_events <- function(dat,obs_number) {
 }
 
 get_ethogram <- function(dat){
-  eth.list = dat$behavior_conf
-  eth.df = do.call(rbind.data.frame, ethogram.list)
+  ## get the ethogram entered into boris program.  For use with summaries
+  ## subevents are not split up, see get_event_typs
+  eth.list = dat$behaviors_conf
+  eth.df = do.call(rbind.data.frame, eth.list)
   eth.df = data.frame(lapply(eth.df, as.character), stringsAsFactors=FALSE)
   return(eth.df)
 }
 
 
 get_event_types <- function(dat,evtype="State event"){
-
-  eth.d = get_ethogram(dat)
-
+  # this take events and subevents and creates rows for each sub-event
+  # get subset of ethogram
+  eth.df = get_ethogram(dat)
   ev.df = with(eth.df[eth.df$type==evtype,], data.frame(code, modifiers,stringsAsFactors = FALSE ))
-
-  data.frame("behavior" = ev.df$code, "Modifiers" = sapply(ev.df$modifiers,strsplitrows))
-  return(ev.df)
+  df = data.frame("behavior" =NULL, "modifiers" =NULL)
+  ## for each row, split the submods and make new rows; result is a list of df's
+  x = by(ev.df, seq_len(nrow(ev.df)), function(row) data.frame(code = as.vector(row$code), "subev" = strsplitrows(row$modifiers)))
+  # combine those dfs into single df
+  return(do.call(rbind.data.frame,x))
 }
 
 
@@ -79,8 +83,8 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
 ##### utilities
 # convert comma list to rows
 strsplitrows <-function(str) {
-  if (typeof(str) != "character") return("")
-  return( cbind(unlist(strsplit(str, ","))) )
+  if (typeof(str) != "character" || nchar(str)==0) return(" ")
+  return( unlist(strsplit(str, ",")) )
 }
 
 # function to make two strings out of one or two

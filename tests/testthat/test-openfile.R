@@ -28,3 +28,12 @@ test_that("can get obs ",{
 
 })
 
+test_that("can get ethogram",{
+  eth = get_ethogram(boris.data)
+  expect_gt(length(eth),0)
+})
+
+test_that("can get point events",{
+  ev = get_event_types(boris.data, evtype="Point events" )
+  expect_gt(nrow(ev),0)
+})

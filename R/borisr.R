@@ -37,13 +37,9 @@ get_ethogram <- function(dat){
 }
 
 
-get_event_types <- function(eth.df,evtype="State event"){
+get_event_types <- function(dat,evtype="State event"){
 
-  strsplitrows <-function(str) {
-    if (typeof(str) != "character") return("")
-    return( cbind(unlist(strsplit(str, ","))) )
-
-  }
+  eth.d = get_ethogram(dat)
 
   ev.df = with(eth.df[eth.df$type==evtype,], data.frame(code, modifiers,stringsAsFactors = FALSE ))
 
@@ -63,13 +59,6 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
   #   character, like |, need to ignore that
   subevlist = str_split(subevents, fixed(seperator))
 
-  # function to make two strings out of one or two
-  # these data sometimes have two, and sometimes one with no seperator
-  make_two <- function(v){
-    if (length(v) < 2) {v[2] = ""}
-    return(c(v[1],v[2]))
-  }
-
   # apply function above to entire list
   subev.list = lapply(subevlist,make_two)
 
@@ -87,4 +76,16 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
 
 }
 
+##### utilities
+# convert comma list to rows
+strsplitrows <-function(str) {
+  if (typeof(str) != "character") return("")
+  return( cbind(unlist(strsplit(str, ","))) )
+}
 
+# function to make two strings out of one or two
+# these data sometimes have two, and sometimes one with no seperator
+make_two <- function(v){
+  if (length(v) < 2) {v[2] = ""}
+  return(c(v[1],v[2]))
+}

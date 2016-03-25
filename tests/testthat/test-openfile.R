@@ -4,7 +4,10 @@ library(borisr)
 
 context("testing  boris")
 
-# TO DO:
+# TO DO: create simpler data frile from string
+
+context("file data handling")
+
 boris_file = '../../data/examplevideotrial.boris'
 boris.data = borisr::read_boris(boris_file)
 test_obs_names = c("animalu22","animalu41")  # to do, make it generic

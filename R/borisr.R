@@ -41,12 +41,15 @@ get_ethogram <- function(dat){
 
 get_event_types <- function(dat,evtype="State event"){
   # this take events and subevents and creates rows for each sub-event
+  # TO DO : VECTORIZE the 'by' loop in here, which is an ugly hack
+
   # get subset of ethogram
   eth.df = get_ethogram(dat)
   ev.df = with(eth.df[eth.df$type==evtype,], data.frame(code, modifiers,stringsAsFactors = FALSE ))
-  df = data.frame("behavior" =NULL, "modifiers" =NULL)
+
   ## for each row, split the submods and make new rows; result is a list of df's
-  x = by(ev.df, seq_len(nrow(ev.df)), function(row) data.frame(code = as.vector(row$code), "subev" = strsplitrows(row$modifiers)))
+  x = by(ev.df, seq_len(nrow(ev.df)), function(row) data.frame(code = as.vector(row$code), "modifier" = strsplitrows(row$modifiers)))
+
   # combine those dfs into single df
   return(do.call(rbind.data.frame,x))
 }

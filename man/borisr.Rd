@@ -8,7 +8,7 @@ borisr()
 reads BORIS video project files into R data structures
 }
 \examples{
-boris_file = 'path/to/boris'
+boris_file = 'data/examplevideotrial.boris'
 boris.data = read_boris(boris_file)
 all_obs_list = get_obslist(boris.data)
 # just get first one

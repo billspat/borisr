@@ -33,7 +33,19 @@ test_that("can get ethogram",{
   expect_gt(length(eth),0)
 })
 
-test_that("can get point events",{
-  ev = get_event_types(boris.data, evtype="Point events" )
+test_that("can get state events",{
+  ev = get_event_types(boris.data )
   expect_gt(nrow(ev),0)
+})
+
+test_that("can get point events",{
+  ev = get_event_types(boris.data, "Point event" )
+  expect_gt(nrow(ev),0)
+})
+
+test_that("can get eventtypes", {
+  evtypes.df = get_event_types(boris.data)
+  expect_gt(nrow(evtypes.df),0)
+  expect_true("code" %in% names(evtypes.df))
+  expect_true("modifier" %in% names(evtypes.df))
 })

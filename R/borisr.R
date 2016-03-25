@@ -10,6 +10,7 @@ get_obslist<- function(dat){
   names(dat$observations)
 }
 
+
 get_ind_vars <- function(dat, obs_number){
   obs = dat$observations[[obs_number]]
   data.frame(obs_id = obs_number, obs$independent_variables, strings_as_factors = FALSE)
@@ -64,13 +65,13 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
   # first have to split the strings, but get a list of vectors back
   # have to use the "fixed" function because if seperator is a regular expression special
   #   character, like |, need to ignore that
-  subevlist = str_split(subevents, fixed(seperator))
+  subev.list = str_split(subevents, fixed(seperator))
 
   # apply function above to entire list
-  subev.list = lapply(subevlist,make_two)
+  subev.list = lapply(subev.list,make_two)
 
   # convert list of vectors to two column matrix
-  subev.matrix = do.call(rbind, lapply(subevlist, rbind))
+  subev.matrix = do.call(rbind, lapply(subev.list, rbind))
 
   # add names from the function arguments to these two columns
   colnames(subev.matrix) = cnames

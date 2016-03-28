@@ -10,6 +10,34 @@ get_obslist<- function(dat){
   names(dat$observations)
 }
 
+#WIP
+summary.events <- function(dat){
+  # this function will summarize ev counts and states
+  # create an event first ev.df = get_events(dat,obs_name)
+  # this is not cool; rather than taking ALL events from data, should accept just a
+  # subset of events data first, using %>%
+  all_events.df = get_all_events(dat)
+  # all_events.df = merge(all_events.df, all_ind_vars.df, by.x = "obs_id", by.y = "obs_id", all.x = TRUE)
+}
+
+##WIP
+get_all_events <- function(dat, obs.list= NULL){
+
+  if (is.null(obs.list)) {
+    obs.list = get_obslist(dat)
+  }
+
+  get_all_events = Vectorize(get_events, "obs_number")
+  all_events.list = get_all_events(dat, obs.list)
+  all_events.df = data.frame(ldply(all_events.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+  # make the get_ind_vars work for a a vector of obs, and get them all
+  get_all_vars  = Vectorize(get_ind_vars, "obs_number")
+  all_ind_vars.list = get_all_vars(dat, obs.list)
+  all_ind_vars.df = data.frame(ldply(all_ind_vars.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+
+  return(all_events.df)
+
+}
 
 get_ind_vars <- function(dat, obs_number){
   obs = dat$observations[[obs_number]]
@@ -20,10 +48,21 @@ get_events <- function(dat,obs_number) {
   # extract the events to a data frame for this one trial by trial name or index number
   # to do: add a column of the obs_number for later grouping
   # to do: add time offset to all times?
-  obs = dat$observations[[obs_number]]
-  group_column = rep(obs_number,nrow(obs$events))
+  print(obs_number)
+  columns = c("obs_id", "time","ID","event","subevent","unknown")
 
-  obs.df = data.frame(group_column, obs$events, stringsAsFactors = FALSE)
+  obs = dat$observations[[obs_number]]
+
+  if (length(obs$events) == 0) {
+    # no events here!  make a blank data.frame
+   x = cbind(rep("", length(columns)))
+   names(x) = columns
+   return(x)
+  }
+
+  event_count = nrow(obs$events)
+  column_of_obs = rep(obs_number,nrow(obs$events))
+  obs.df = data.frame(column_of_obs, obs$events, stringsAsFactors = FALSE)
 
   names(obs.df) = c("obs_id", "time","ID","event","subevent","unknown")
   obs.df = split_subevents(obs.df)

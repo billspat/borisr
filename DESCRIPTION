@@ -7,7 +7,9 @@ Depends:
     R (>= 3.0.0)
 Imports:
     jsonlite,
-    stringr
+    stringr,
+    magrittr,
+    plyr
 Description: Can directly read project.boris files created by the awesome video
     analysis program BORIS
 License: MIT

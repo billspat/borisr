@@ -1,3 +1,4 @@
+library(magrittr)
 
 read_boris <- function(boris_file) {
   b = readLines(boris_file,  warn = "F")
@@ -10,17 +11,60 @@ get_obslist<- function(dat){
   names(dat$observations)
 }
 
+# BORIS saves state events as pairs of events, on and off.  Duration is off.time - on.time
+# first, squash pairs of state events into durations before creating summary table
 #WIP
-summary.events <- function(dat){
+get_state_durations <- function(dat, events.df){
+  ev_codes = get_event_types(dat,evtype="State event")
+  state_events.vec = ev_codes %>% as.vector %>% unique
+  state_events.df = events.df[events.df$event %in% state_events.vec, ]
+
+  # since adding a single row to dataframe repeatedly is more expensive than
+  #
+  for (evrow in state_events.df[-1,]) {
+    prevevcode = prevrow$event
+    evcode = evrow$event
+    if (prevevcode != evcode) {
+      # unmatched
+      evduration = NA
+    } else {
+      evduration = evrow$time - prevrow$time
+    }
+    print(prevrow$obs.id, evcode, evduration)
+  }
+}
+
+#WIP
+summary.states <- function(dat, events.df){
+  # requires an all-events data frame from get_all_events
+  # filter out point events
+
+  # data wrangling, getting events, obs, and codes and make empty DF to hold durations
+
+  ev_codes = get_event_types(dat,evtype="State event")
+  state_events.vec = ev_codes %>% as.vector %>% unique
+  state_events.df = events.df[events.df$event %in% state_events.vec, ]
+  obs.ids = state_events.df$obs_id %>% as.vector %>% unique
+  N = nrow(obs.ids)
+
+
+  new.df  <- data.frame(obs_id = obs.ids, evcode=rep("", N), txt=rep("", N), stringsAsFactors=FALSE)
+  prevrow = state_events.df[1,]
+
+
+
+
+
+}
+summary.events <- function(dat, events.df = get_all_events(dat)){
   # this function will summarize ev counts and states
   # create an event first ev.df = get_events(dat,obs_name)
-  # this is not cool; rather than taking ALL events from data, should accept just a
-  # subset of events data first, using %>%
-  all_events.df = get_all_events(dat)
+  # by default take all events from data; but can accept a subset also, using %>%?
+  # subset of events data first,
   # all_events.df = merge(all_events.df, all_ind_vars.df, by.x = "obs_id", by.y = "obs_id", all.x = TRUE)
 }
 
-##WIP
+
 get_all_events <- function(dat, obs.list= NULL){
 
   if (is.null(obs.list)) {
@@ -127,7 +171,7 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
 # convert comma list to rows
 strsplitrows <-function(str) {
   if (typeof(str) != "character" || nchar(str)==0) return(" ")
-  return( unlist(strsplit(str, ",")) )
+  return( unlist(strsplit(str, "[,|]")) )
 }
 
 # function to make two strings out of one or two

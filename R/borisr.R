@@ -1,16 +1,32 @@
-library(magrittr)
+#' @import magrittr
 
+
+#' @export
 read_boris <- function(boris_file) {
   b = readLines(boris_file,  warn = "F")
-  dat = fromJSON(b)
+  dat = jsonlite::fromJSON(b)
   return(dat)
 }
 
+#' @export
 get_obslist<- function(dat){
   # check if dat is boris data
   names(dat$observations)
 }
 
+# to do:
+# Point events : count total events
+
+# State events:
+# 1) group into pairs and calc duration
+#    IF unpaired, then mark as 'unpaired' and not provide duration.
+# 2) sum the duration & count total instances
+#    IF any are unpaired, report them as individual instances and label as unpaired
+# 3) latency
+#    function(evCode1, evCode2=NULL){
+#        if !evCode2 return time from start to evCode1 else
+#        return time between first occurrence evCode1 and 1st evCode2
+#           }
 # BORIS saves state events as pairs of events, on and off.  Duration is off.time - on.time
 # first, squash pairs of state events into durations before creating summary table
 #WIP
@@ -35,6 +51,7 @@ get_state_durations <- function(dat, events.df){
 }
 
 #WIP
+#' @export
 summary.states <- function(dat, events.df){
   # requires an all-events data frame from get_all_events
   # filter out point events
@@ -51,43 +68,27 @@ summary.states <- function(dat, events.df){
   new.df  <- data.frame(obs_id = obs.ids, evcode=rep("", N), txt=rep("", N), stringsAsFactors=FALSE)
   prevrow = state_events.df[1,]
 
-
-
-
+  return( data.frame( 'nothing yet') )
 
 }
+
+#' @export
 summary.events <- function(dat, events.df = get_all_events(dat)){
   # this function will summarize ev counts and states
   # create an event first ev.df = get_events(dat,obs_name)
   # by default take all events from data; but can accept a subset also, using %>%?
   # subset of events data first,
   # all_events.df = merge(all_events.df, all_ind_vars.df, by.x = "obs_id", by.y = "obs_id", all.x = TRUE)
+  return(data.frame('nothing yet'))
 }
 
-
-get_all_events <- function(dat, obs.list= NULL){
-
-  if (is.null(obs.list)) {
-    obs.list = get_obslist(dat)
-  }
-
-  get_all_events = Vectorize(get_events, "obs_number")
-  all_events.list = get_all_events(dat, obs.list)
-  all_events.df = data.frame(ldply(all_events.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
-  # make the get_ind_vars work for a a vector of obs, and get them all
-  get_all_vars  = Vectorize(get_ind_vars, "obs_number")
-  all_ind_vars.list = get_all_vars(dat, obs.list)
-  all_ind_vars.df = data.frame(ldply(all_ind_vars.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
-
-  return(all_events.df)
-
-}
 
 get_ind_vars <- function(dat, obs_number){
   obs = dat$observations[[obs_number]]
   data.frame(obs_id = obs_number, obs$independent_variables, strings_as_factors = FALSE)
 }
 
+#' @export
 get_events <- function(dat,obs_number) {
   # extract the events to a data frame for this one trial by trial name or index number
   # to do: add a column of the obs_number for later grouping
@@ -113,16 +114,42 @@ get_events <- function(dat,obs_number) {
   return(obs.df)
 }
 
+#' @export
+get_all_events <- function(dat, obs.list= NULL){
+
+  if (is.null(obs.list)) {
+    obs.list = get_obslist(dat)
+  }
+
+  get_events_vector = Vectorize(get_events, "obs_number")
+  get_all_vars  = Vectorize(get_ind_vars, "obs_number")
+
+  all_events.list = get_events_vector(dat, obs.list)
+  all_events.df = data.frame(ldply(all_events.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+  # make the get_ind_vars work for a a vector of obs, and get them all
+
+  all_ind_vars.list = get_all_vars(dat, obs.list)
+  all_ind_vars.df = data.frame(ldply(all_ind_vars.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+
+  return(all_events.df)
+
+}
+
+#' @export
 get_ethogram <- function(dat){
   ## get the ethogram entered into boris program.  For use with summaries
   ## subevents are not split up, see get_event_typs
+
+  # pull out the list of behavs from data file
   eth.list = dat$behaviors_conf
+  # convert this to a data frame, but with factors (how not to make factors here)
   eth.df = do.call(rbind.data.frame, eth.list)
+  # hack convert all factors to non-factors for this data.frame
   eth.df = data.frame(lapply(eth.df, as.character), stringsAsFactors=FALSE)
   return(eth.df)
 }
 
-
+#' @export
 get_event_types <- function(dat,evtype="State event"){
   # this take events and subevents and creates rows for each sub-event
   # TO DO : VECTORIZE the 'by' loop in here, which is an ugly hack
@@ -171,7 +198,7 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
 # convert comma list to rows
 strsplitrows <-function(str) {
   if (typeof(str) != "character" || nchar(str)==0) return(" ")
-  return( unlist(strsplit(str, "[,|]")) )
+  return( unlist(stringr::strsplit(str, "[,|]")) )
 }
 
 # function to make two strings out of one or two

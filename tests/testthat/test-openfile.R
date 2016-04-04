@@ -1,6 +1,4 @@
 library(testthat)
-library(jsonlite)
-library(borisr)
 
 context("testing  boris")
 
@@ -8,7 +6,9 @@ context("testing  boris")
 
 context("file data handling")
 
-boris_file = '../../data/examplevideotrial.boris'
+# this only works with
+boris_file = system.file("extdata", "examplevideotrial.boris", package = "borisr")
+# 'data/examplevideotrial.boris'
 boris.data = borisr::read_boris(boris_file)
 test_obs_names = c("animalu22","animalu41")  # to do, make it generic
 
@@ -18,7 +18,7 @@ test_that("can open a boris file", {
 
 test_that("can read boris data structure ", {
   expect_gt(length(names(boris.data)),0)
-  expect_true("observations" %in% names(dat))
+  expect_true("observations" %in% names(boris.data))
 })
 
 test_that("can get obs ",{

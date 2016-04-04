@@ -125,11 +125,11 @@ get_all_events <- function(dat, obs.list= NULL){
   get_all_vars  = Vectorize(get_ind_vars, "obs_number")
 
   all_events.list = get_events_vector(dat, obs.list)
-  all_events.df = data.frame(ldply(all_events.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+  all_events.df = data.frame(plyr::ldply(all_events.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
   # make the get_ind_vars work for a a vector of obs, and get them all
 
   all_ind_vars.list = get_all_vars(dat, obs.list)
-  all_ind_vars.df = data.frame(ldply(all_ind_vars.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
+  all_ind_vars.df = data.frame(plyr::ldply(all_ind_vars.list, data.frame, .id="obs_id"), strings_as_factors=FALSE)
 
   return(all_events.df)
 
@@ -198,7 +198,7 @@ split_subevents <-function(evdata, seperator = "|", cnames = c("subev1", "subev2
 # convert comma list to rows
 strsplitrows <-function(str) {
   if (typeof(str) != "character" || nchar(str)==0) return(" ")
-  return( unlist(stringr::strsplit(str, "[,|]")) )
+  return( unlist(strsplit(str, "[,|]")) )
 }
 
 # function to make two strings out of one or two
